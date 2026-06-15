@@ -1,6 +1,8 @@
 {
   "sources": [
-    {"id": "rot",  "title": "Rise of Tiamat",       "type": "sourcebook", "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"},
-    {"id": "dia",  "title": "Descent into Avernus",  "type": "sourcebook", "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"}
+    {"id": "lmop", "title": "Lost Mine of Phandelver",  "type": "sourcebook", "format": "markdown", "file": "Lost Mine of Phandelver.md",  "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"},
+    {"id": "hotdq", "title": "Hoard of the Dragon Queen", "type": "sourcebook", "format": "markdown", "file": "Hoard of the Dragon Queen.md", "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"},
+    {"id": "rot",  "title": "Rise of Tiamat",            "type": "sourcebook", "format": "markdown", "file": "Rise of Tiamat.md",            "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"},
+    {"id": "dia",  "title": "Descent into Avernus",      "type": "sourcebook", "format": "pdf",      "file": null,                          "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "deferred"}
   ]
 }

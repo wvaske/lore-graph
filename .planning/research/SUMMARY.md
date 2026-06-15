@@ -9,7 +9,7 @@
 
 Lore Graph's integrity-critical layer — controlled vocabulary, the pure `Validator` (dangling-edge rejection, type-matrix, ACCEPT/QUEUE/REJECT routing), and the `extract_with_llm` boundary — is already built and tested. This milestone ("first ingest", PLAN Phases 1–2) is therefore not about *inventing* trust; it is about **wiring trust into the write/ingest path**: an idempotent Neo4j loader, a gazetteer bootstrapped from the graph, a two-column sourcebook PDF parser, and an orchestration pipeline — then ingesting Rise of Tiamat end-to-end so the suspect-generator (Query B) returns plausible, traceable results.
 
-Research converged on three things the roadmap must respect. First, the **gazetteer bootstrap is the lynchpin**: the gazetteer is in-memory and starts empty every run, so even canonical entities (Tiamat, Severin) fail to resolve and their edges fragment to QUEUE/REJECT — nothing downstream works until `bootstrap_gazetteer(driver)` exists. Second, **idempotency has a hidden hard dependency**: Neo4j MERGE only dedupes with a uniqueness constraint backing the merge key, and `Item` has no constraint — ship the constraint with the loader or items silently duplicate. Third, the **PDF parsing track is the one genuinely hard, high-variance problem**: PyMuPDF emits PDF-creation order (not reading order), so two-column pages with stat blocks and sidebars fabricate false adjacencies that *pass validation*. The fix is a per-page quality gate that escalates only hard pages to Marker `--use_llm`/Docling.
+Research converged on three things the roadmap must respect. First, the **gazetteer bootstrap is the lynchpin**: the gazetteer is in-memory and starts empty every run, so even canonical entities (Tiamat, Severin) fail to resolve and their edges fragment to QUEUE/REJECT — nothing downstream works until `bootstrap_gazetteer(driver)` exists. Second, **idempotency has a hidden hard dependency**: Neo4j MERGE only dedupes with a uniqueness constraint backing the merge key, and `Item` has no constraint — ship the constraint with the loader or items silently duplicate. Third — **revised 2026-06-15** — the three target sourcebooks are pre-converted **Markdown**, so the milestone's parser is a Markdown structure-parser, not the hard two-column PDF pipeline. This removes the highest-risk problem (PDF reading-order corruption) from this milestone and turns markup (**bold** entity mentions, *italic* items, `#`→`####` headings) into a *help* for extraction. PDF parsing (PyMuPDF4LLM→Marker/Docling triage) is deferred to a later phase for scanned/older books.
 
 The dominant risk class is **silent correctness failure** — the pipeline runs green but produces fragmented, duplicated, or fabricated edges. Mitigation is front-loaded: the integrity guards (bootstrap, content-hash idempotency, schema-constraint fixes, provenance enforcement) land in the first phase; reading-order correctness and truncation handling land in the parsing/pipeline phase; and the "review all RoT edges manually" gate is the only real backstop against reading-order false edges, so it must be a hard exit criterion.
 
@@ -79,11 +79,11 @@ Research strongly suggests a structure mirroring the dependency-driven build ord
 **Addresses:** idempotency, provenance enforcement, gazetteer bootstrap, review sink (table stakes).
 **Avoids:** Pitfalls 1, 2, 4 (partial), 5, 6, 7.
 
-### Phase 2: Sourcebook PDF parser (two-column triage)
-**Rationale:** Independent of the graph-write path — pure text-in/`Chunk`-out — so it can proceed in parallel, but it is the highest-variance work and most likely to need deeper per-phase research.
-**Delivers:** `Chunk` dataclass + `parse(path, "sourcebook")` with PyMuPDF4LLM fast pass, per-page quality gate, and Marker `--use_llm`/Docling escalation; parse-output caching by content-hash.
-**Uses:** `pymupdf4llm`, `marker-pdf`, `PyMuPDF` geometry for the difficulty scorer.
-**Avoids:** Pitfall 3 (reading-order corruption); the parse-cache performance trap.
+### Phase 2: Markdown sourcebook parser
+**Rationale:** Independent of the graph-write path — pure text-in/`Chunk`-out — so it can proceed in parallel. With pre-converted Markdown this is now low-risk: split by heading hierarchy, carry structure (tables, `>>` read-aloud, `***Label.***`), and surface **bold**/*italic* spans as entity-mention candidates for gazetteer hints.
+**Delivers:** `Chunk` dataclass + `parse(path, "markdown")` (heading-hierarchy split, provenance path, structure-preserving); bold/italic mention extraction; parse-output caching by content-hash (which also dedupes the shared HotDQ/RoT front matter).
+**Uses:** a lightweight Markdown parse (stdlib/regex over headings, or `markdown-it-py`/`mistune`) — no heavy PDF/ML deps this milestone.
+**Avoids:** the parse-cache performance trap. (Pitfall 3, two-column reading-order corruption, no longer applies — it moves to the deferred PDF phase.)
 
 ### Phase 3: End-to-end pipeline + Rise of Tiamat ingest + suspect-generator validation
 **Rationale:** Pure glue that converges the two tracks; can only be meaningfully built/tested once both exist. Closes the milestone against PLAN's "done-when".
@@ -96,12 +96,12 @@ Research strongly suggests a structure mirroring the dependency-driven build ord
 - **Avoids the silent-failure class** by making idempotency, provenance, and resolution preconditions rather than afterthoughts.
 
 ### Research Flags
-Phases likely needing deeper research during planning:
-- **Phase 2 (parser):** two-column reading-order is the genuinely hard problem; the difficulty-score threshold and the Marker `use_llm` backend choice (Gemini API vs local Ollama) are empirical decisions requiring hands-on calibration on the RoT PDF.
-
 Phases with standard patterns (can skip research-phase):
 - **Phase 1 (loader/bootstrap):** canonical Neo4j `UNWIND`/`MERGE` idioms; well-documented, low uncertainty.
+- **Phase 2 (markdown parser):** heading-hierarchy splitting + markup extraction is a well-trodden, low-risk pattern (the hard PDF problem is deferred).
 - **Phase 3 (pipeline):** glue over already-verified contracts.
+
+Deferred to a later milestone (flagged for *then*): the **PDF parser** phase WILL need deeper research — two-column reading-order, the difficulty-score threshold, and the Marker `use_llm` backend choice (Gemini vs local Ollama) are empirical and require hands-on calibration.
 
 ## Confidence Assessment
 

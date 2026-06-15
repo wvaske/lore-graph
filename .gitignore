@@ -2,6 +2,7 @@
 .env
 # raw source material — copyrighted, never commit
 data/sources/
+data/*.md
 *.pdf
 *.epub
 *.mobi

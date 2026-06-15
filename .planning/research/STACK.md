@@ -4,7 +4,25 @@
 **Researched:** 2026-06-15
 **Confidence:** HIGH (parsing + driver versions verified against PyPI / official docs); MEDIUM on the precise "hard-page" heuristic thresholds (those are empirical, tune on RoT)
 
-> Scope note: the core stack (Python 3.11+, Pydantic v2, Neo4j 5 Community, Anthropic forced-tool-use extraction, rapidfuzz resolution) is **settled** and is not relitigated here. This document answers only the two open milestone questions: (a) the PDF-parsing toolchain + triage strategy for two-column RPG sourcebooks, and (b) the idempotent batched Neo4j write path. It closes with an explicit "what NOT to use" for this design.
+> Scope note: the core stack (Python 3.11+, Pydantic v2, Neo4j 5 Community, Anthropic forced-tool-use extraction, rapidfuzz resolution) is **settled** and is not relitigated here.
+>
+> **⚠ Revised 2026-06-15:** the three target sourcebooks are pre-converted **Markdown**, so this milestone's parser is a lightweight Markdown structure-parser (no heavy PDF/ML deps). The PDF toolchain below (PyMuPDF4LLM → Marker/Docling triage) is **deferred to a later phase** for scanned/older books and retained here as reference for that phase. The idempotent Neo4j write path (section "Idempotent batched Neo4j write path") is unchanged and remains in scope.
+
+## Markdown parser (this milestone's parser — supersedes the PDF toolchain below)
+
+The books in `data/*.md` have a clean `#`→`####` heading hierarchy, **bold** entity mentions, *italic* item titles, pipe tables (carrying a `#$prompt_number...$#` template artifact to strip), and `>>…>>` read-aloud blocks. No monster stat blocks.
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| `markdown-it-py` *or* `mistune` (or stdlib regex over headings) | latest | Split Markdown by heading hierarchy into provenance-tagged chunks; access inline spans | Lightweight, pure-Python, no GPU/ML. A token-stream/AST parse gives heading paths (provenance) + inline **bold**/*italic* spans (entity-mention candidates) directly. For a first cut, a regex sweep over `^#{1,6}` headings + `\*\*(.+?)\*\*` bold spans is sufficient and dependency-free. |
+
+**Markdown parsing strategy:** walk headings to build chunk boundaries with a full section path (`Chapter > Section > Subsection`) as `source`/`section` provenance; carry tables and `>>` read-aloud blocks into the owning chunk; extract `**bold**` spans as candidate entity mentions to resolve against the gazetteer for extraction hints; content-hash each chunk (dedupes the shared HotDQ/RoT front matter). Evidence spans stay <25 words.
+
+---
+
+### Deferred PDF toolchain (reference for the later scanned-sourcebook phase)
+
+The remainder of this document answered the original open question — the PDF-parsing toolchain + triage strategy for two-column RPG sourcebooks — plus the idempotent batched Neo4j write path. The PDF parts are **deferred**; the Neo4j write path is current.
 
 ## Recommended Stack
 
