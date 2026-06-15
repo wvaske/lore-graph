@@ -1,0 +1,17 @@
+# secrets / local config
+.env
+# raw source material — copyrighted, never commit
+data/sources/
+*.pdf
+*.epub
+*.mobi
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+# neo4j local volume
+neo4j_data/

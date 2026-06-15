@@ -1,0 +1,22 @@
+[project]
+name = "lore-graph"
+version = "0.1.0"
+description = "Knowledge graph + hybrid retrieval pipeline for D&D / Forgotten Realms lore"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "rapidfuzz>=3.6",
+    "neo4j>=5.18",        # bolt driver for the loader (Python owns all writes)
+    "anthropic>=0.40",    # extraction LLM; isolated behind extract_with_llm
+]
+
+[project.optional-dependencies]
+parsing = ["pymupdf4llm>=0.0.17", "marker-pdf", "docling", "ebooklib", "beautifulsoup4"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["lore_graph*"]

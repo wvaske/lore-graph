@@ -1,0 +1,6 @@
+{
+  "sources": [
+    {"id": "rot",  "title": "Rise of Tiamat",       "type": "sourcebook", "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"},
+    {"id": "dia",  "title": "Descent into Avernus",  "type": "sourcebook", "edition": "5e", "canon": "PUBLISHED", "canon_rank": 1, "status": "pending"}
+  ]
+}
