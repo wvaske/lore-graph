@@ -125,3 +125,34 @@ data/manifest.json            source registry (title, edition, canon tier, statu
 - **Contradiction at scale** is the real project past two books — the canon-tier
   axis exists from the start specifically so it doesn't need retrofitting.
 - **Never commit `data/sources/`** — those are books you own, not repo content.
+  Source markdown in `data/*.md` is also gitignored for the same reason.
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow
+
+This project is managed with GSD (Get Shit Done). Planning artifacts live in
+`.planning/`:
+
+- `PROJECT.md` — project context, requirements (Validated/Active/Out-of-scope), key decisions
+- `REQUIREMENTS.md` — v1 "First Ingest" requirements with REQ-IDs + phase traceability
+- `ROADMAP.md` — phased plan (Phase 1 Graph-Write Foundation → 2 Markdown Parser → 3 Pipeline+Ingest)
+- `STATE.md` — current position and accumulated context (read this first when resuming)
+- `research/` — stack/features/architecture/pitfalls/summary for this milestone
+- `codebase/` — structured map of the existing code
+
+This repo's own `PLAN.md` remains the long-horizon spec; the `.planning/ROADMAP.md`
+scopes the current milestone (PLAN Phases 1–2).
+
+### Workflow enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD
+command so planning artifacts and execution context stay in sync.
+
+Entry points:
+- `/gsd:plan-phase N` then `/gsd:execute-phase N` for planned phase work
+- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd-debug` for investigation and bug fixing
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly
+asks to bypass it.
+<!-- GSD:workflow-end -->
