@@ -82,8 +82,8 @@ All **three** registered markdown sourcebooks (Lost Mine of Phandelver, Hoard of
 
 ## Out of Scope (with reasoning)
 
-- **Hybrid vector retrieval + embeddings** — PLAN Phase 4; needs real graph data first (this milestone produces it). Neo4j native vector index means zero retrofit cost.
-- **Live DM companion over MCP** — PLAN Phase 4; cannot build/test retrieval without graph content.
+- **Hybrid vector retrieval + embeddings** — out of scope for v1; now **ROADMAP Phase 4** (sequenced after v1). Needs real graph data first (this milestone produces it). Embedding model already deployed (bge-m3 @ `gb10:8090`, 1024-dim, cosine); Neo4j native vector index means zero retrofit cost.
+- **Live DM companion over MCP** — out of scope for v1; now **ROADMAP Phase 4**. Cannot build/test retrieval without graph content.
 - **Contradiction auto-resolution** — PLAN Phase 5; RoT is single-source, nothing to resolve. Stamp canon-tier; resolve nothing (resolving now risks silently discarding facts, violating "hold contradictions with attribution").
 - **Novel/EPUB parser + multi-edition batch ingest** — PLAN Phase 5; different extraction problem; reusing the sourcebook profile produces garbage.
 - **GNNs / graph ML** — PLAN Phase 6, optional; needs a large graph; never replaces the explainable LLM+Cypher path.

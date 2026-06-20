@@ -12,6 +12,7 @@ This milestone wires the already-trusted extraction + validation layer into a wr
 - [ ] **Phase 1: Graph-Write Foundation** - Hardened schema + gazetteer bootstrap + idempotent provenance-stamping loader, proven by an extraction→Neo4j→query round-trip.
 - [ ] **Phase 2: Markdown Sourcebook Parser** - Heading-hierarchy split into provenance-tagged, structure-aware, content-hashed chunks with bold/italic entity-mention hints.
 - [ ] **Phase 3: Pipeline Orchestration & End-to-End Ingest** - Full idempotent ingest loop over all three books; suspect-generator returns plausible, traceable results over Rise of Tiamat.
+- [ ] **Phase 4: Hybrid Retrieval + Companion** - Embed node text with bge-m3 into Neo4j's native vector index (1024-dim, cosine); retrieval = vector seed → graph walk, exposed to the DM companion over the read-only MCP server. *(Maps to PLAN Phase 4; extends beyond the v1 "First Ingest" milestone — needs real graph content from Phases 1–3 first.)*
 
 ## Phase Details
 
@@ -49,6 +50,22 @@ This milestone wires the already-trusted extraction + validation layer into a wr
   4. All extracted edges from each book are manually reviewable (the human-review backstop), an integration test confirms a validated edge survives the MERGE round-trip and is retrievable by flagship queries (A, B, spatiotemporal), and the suspect-generator (Query B) over Rise of Tiamat surfaces a known instigator with a traceable motive (aligned goal) and means (command/capability path) per a defined acceptance checklist.
 **Plans**: TBD
 
+### Phase 4: Hybrid Retrieval + Companion
+**Goal**: A DM companion answers a session-time lore question by combining a vector seed over node embeddings with a graph walk — scoped to party time/place and respecting canon tier — using the already-deployed bge-m3 embedding endpoint and Neo4j's native vector index.
+**Depends on**: Phase 3 (retrieval cannot be built or tuned without real graph content; this milestone produces it)
+**Requirements**: TBD (assigned at discuss/plan time)
+**Locked decisions** (settled during lab infra deployment, 2026-06-20 — do not relitigate without a stated reason):
+  - **Embedding model**: BAAI **bge-m3** — 1024-dim, multilingual, 8192-token context. Chosen over nomic-embed / bge-large for multilingual + long-document headroom.
+  - **Endpoint (already deployed)**: dedicated always-on `llama-server --embeddings` instance at **`http://gb10.vaske.us:8090/v1/embeddings`** (model field `bge-m3`), kept separate from the chat router so it is never LRU-evicted. CLS pooling; output is **L2-normalized**; **no instruction prefixes** needed (unlike bge-en).
+  - **Vector store**: Neo4j 5 **native vector index** (no separate vector DB) — `vector.dimensions: 1024`, `vector.similarity_function: 'cosine'` (vectors arrive pre-normalized).
+  - **Retrieval pattern**: vector seed → graph traversal. The same embeddings also back the Gazetteer `embedding_resolve` hook for hard-case entity resolution.
+**Success Criteria** (what must be TRUE):
+  1. A Neo4j vector index over the chosen node labels' `embedding` property (1024-dim, cosine) is added to `schema/` and applied by `make schema`.
+  2. The pipeline `embed` step (pipeline step 8) populates node embeddings from the bge-m3 endpoint and is idempotent — unchanged nodes (by content-hash) are not re-embedded; writes go through the bolt driver, never MCP.
+  3. The Gazetteer `embedding_resolve(mention)` hook resolves a hard case fuzzy matching misses (e.g. "the cult leader" → `Severin Silrajin`) and routes genuine near-ties to review.
+  4. A retrieval call combines a vector seed with a graph walk and returns provenance-attributed, canon-tier-respecting results scoped to party time/place, exposed to the companion over the **read-only** Neo4j MCP server.
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -56,6 +73,7 @@ This milestone wires the already-trusted extraction + validation layer into a wr
 | 1. Graph-Write Foundation | 0/TBD | Not started | - |
 | 2. Markdown Sourcebook Parser | 0/TBD | Not started | - |
 | 3. Pipeline Orchestration & End-to-End Ingest | 0/TBD | Not started | - |
+| 4. Hybrid Retrieval + Companion | 0/TBD | Planned (after v1) | - |
 
 ---
 *Created: 2026-06-15 · Milestone: v1 "First Ingest" · Granularity: coarse*

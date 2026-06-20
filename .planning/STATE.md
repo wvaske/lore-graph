@@ -27,7 +27,8 @@
 - v1 = "First Ingest"; build loader → gazetteer bootstrap → parser → pipeline (graph-write track is the critical path; parser is parallelizable).
 - Parse Markdown only this milestone; PDF parsing (two-column triage) deferred to v2 / PLAN Phase 3.
 - `bootstrap_gazetteer` lives in `loader.py` (the only other Neo4j-driver holder); `extraction.py` stays free of the `neo4j` import to keep the Validator pure.
-- Three phases at coarse granularity, dependency-driven per research build order.
+- Three phases at coarse granularity, dependency-driven per research build order (this is the v1 "First Ingest" scope; milestone counters are /3).
+- **Phase 4 (Hybrid Retrieval + Companion)** appended to the roadmap 2026-06-20 with locked embedding decisions (bge-m3 @ `gb10:8090`, 1024-dim cosine Neo4j native vector index); sequenced **after** v1 (Phases 1–3), so it does not count toward the v1 /3.
 
 ### Open questions (resolve during planning)
 - Time-bounded MERGE key: does a state-fact relationship's merge identity include `valid_from`? (Phase 1 loader design.)
@@ -47,4 +48,4 @@
 - **Files:** `.planning/ROADMAP.md`, `.planning/REQUIREMENTS.md`, `.planning/PROJECT.md`, `.planning/research/*`.
 
 ---
-*Last updated: 2026-06-15 after roadmap creation*
+*Last updated: 2026-06-20 — appended roadmap Phase 4 (hybrid retrieval + companion); v1 scope unchanged (still 0/3)*
